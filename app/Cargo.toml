@@ -1,5 +1,5 @@
 [package]
-name = "frp-operator-controller"
+name = "frp-operator"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

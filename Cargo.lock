@@ -369,20 +369,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "frp-operator-api"
-version = "0.1.0"
-dependencies = [
- "k8s-openapi",
- "kube",
- "log",
- "schemars",
- "serde",
- "serde_json",
- "serde_yaml",
-]
-
-[[package]]
-name = "frp-operator-controller"
+name = "frp-operator"
 version = "0.1.0"
 dependencies = [
  "frp-operator-api",
@@ -397,6 +384,19 @@ dependencies = [
  "simplelog",
  "thiserror 1.0.69",
  "tokio",
+]
+
+[[package]]
+name = "frp-operator-api"
+version = "0.1.0"
+dependencies = [
+ "k8s-openapi",
+ "kube",
+ "log",
+ "schemars",
+ "serde",
+ "serde_json",
+ "serde_yaml",
 ]
 
 [[package]]
