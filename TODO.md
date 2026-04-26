@@ -1,0 +1,23 @@
+- Create CRDs
+    - Client
+        - clientID?
+        - user?
+        - serverAddr
+        - serverPort
+        - auth.method (always token for now)
+        - auth.token
+        - webServer.* (skip admin ui for now)
+        - transport.* (always use tcp for now)
+        - metadatas.*
+    - Upstream (for lack of better name)
+        - name (can probably be infered)
+        - type
+        - localIP
+        - localPort
+        - transport.* (skip for now)
+        - remotePort
+        - loadBalancer.* (skip for now)
+        - healthCheck.* (skip for now)
+        - metadatas.*
+    - Visitor (Proxy Client -> Proxy Server -> Proxy Client)
+        - * (skip for now)
