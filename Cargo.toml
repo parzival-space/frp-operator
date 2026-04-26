@@ -6,7 +6,6 @@ members = ["api", "controller"]
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
-license-file = "LICENSE"
 authors = ["Malte Linke <me@parizval.space>"]
 repository = "https://github.com/parzival-space/frp-operator"
 
