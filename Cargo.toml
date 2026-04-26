@@ -1,27 +1,24 @@
-[package]
-name = "frp-operator"
+[workspace]
+resolver = "3"
+members = ["api"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+license-file = "LICENSE"
+authors = ["Malte Linke <me@parizval.space>"]
+repository = "https://github.com/parzival-space/frp-operator"
 
-[dependencies]
-tokio = { version = "1.52.1", features = ["full"] }
+[workspace.dependencies]
+# logging
+log = { version = "0.4.29" }
+simplelog = "0.12.2"
 
-# kubernetes client libraries
+# kubernetes
 kube = { version = "3.1.0", features = ["runtime", "derive"] }
 k8s-openapi = { version = "0.27.1", features = ["latest", "schemars"] }
 schemars = { version = "1.2.1" }
 serde = { version = "1.0.228" }
 serde_json = { version = "1.0.149"}
 serde_yaml = { version = "0.9.33" }
-
-# development utilities
-thiserror = "2.0.18"
-futures-util = { version = "0.3.32", features = ["compat"]}
-
-# logging
-log = "0.4.29"
-simplelog = "0.12.2"
-
-[[bin]]
-name = "generate-crds"
-path = "src/bin/generate_crds.rs"
