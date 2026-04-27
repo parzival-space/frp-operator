@@ -24,3 +24,4 @@ serde_yaml = { version = "0.9.33" }
 
 # tools
 tokio = { version = "1.52.1", features = ["full"] }
+thiserror = { version = "2.0.18" }

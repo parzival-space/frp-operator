@@ -17,7 +17,7 @@ serde_json.workspace = true
 serde_yaml.workspace = true
 tokio.workspace = true
 simplelog.workspace = true
+thiserror.workspace = true
 
 # todo: remove this
-thiserror = "1.0.38"
 futures-util = "0.3.28"
