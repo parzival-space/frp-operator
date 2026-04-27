@@ -1,8 +1,8 @@
 use serde::Serialize;
 use kube::{Client, Error};
 use frp_operator_api::v1alpha1;
-use crate::frp::config::client_auth_config::{FrpClientAuthConfig, FrpClientAuthMethod};
-use crate::frp::FrpConfigResolvable;
+use crate::frp::config::{FrpClientAuthConfig, FrpClientAuthMethod};
+use crate::frp::config::FrpConfigResolvable;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

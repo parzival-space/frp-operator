@@ -3,7 +3,7 @@ use kube::{Api, Client, Error};
 use log::debug;
 use serde::Serialize;
 use frp_operator_api::v1alpha1;
-use crate::frp::FrpConfigResolvable;
+use crate::frp::config::FrpConfigResolvable;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

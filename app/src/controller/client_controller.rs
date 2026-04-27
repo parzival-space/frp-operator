@@ -5,7 +5,7 @@ use kube::runtime::controller::Action;
 use log::{debug, info, warn};
 use thiserror::Error;
 use frp_operator_api::v1alpha1;
-use crate::frp::{FrpClientConfig, FrpConfigResolvable};
+use crate::frp::config::{FrpClientConfig, FrpConfigResolvable};
 use crate::OperatorContext;
 
 #[derive(Debug, Error)]
@@ -24,9 +24,6 @@ pub async fn reconcile(client: Arc<v1alpha1::Client>, context: Arc<OperatorConte
     let client_config_text = toml::to_string(&client_config).unwrap();
     info!("Generated FRP client config for {}:\n{}", client.name_any(), client_config_text);
 
-    // step 1: read info from client
-    // step 2: request all tunnel resources for this client
-    // step 3: render FRP client config
     // step 4: check for existing deployment
     // step 4.1: compare hash
     // step 5: update deployment
