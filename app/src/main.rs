@@ -1,7 +1,7 @@
 mod controller;
+mod frp;
 
 use std::sync::Arc;
-
 use frp_operator_api::v1alpha1;
 use futures_util::stream::StreamExt;
 use kube::runtime::Controller;
@@ -9,6 +9,11 @@ use kube::{Api, Client};
 use kube::runtime::watcher::Config;
 use log::LevelFilter;
 use simplelog::{TermLogger, TerminalMode};
+
+#[derive(Clone)]
+pub struct OperatorContext {
+    pub client: Client,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>>{
@@ -20,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     ).expect("Could not setup logging");
 
     let kube = Client::try_default().await?;
-    let context = Arc::new(()); // bad empty context - put client in here
+    let context = Arc::new(OperatorContext { client: kube.clone() }); // bad empty context - put client in here
 
     let client_api: Api<v1alpha1::Client> = Api::all(kube);
     // todo: add tunnel api

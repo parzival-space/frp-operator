@@ -18,9 +18,12 @@ simplelog = "0.12.2"
 kube = { version = "3.1.0", features = ["runtime", "derive"] }
 k8s-openapi = { version = "0.27.1", features = ["latest", "schemars"] }
 schemars = { version = "1.2.1" }
+
+# parsing
 serde = { version = "1.0.228" }
 serde_json = { version = "1.0.149"}
 serde_yaml = { version = "0.9.33" }
+toml = { version = "1.1.2+spec-1.1.0", features = ["serde"] }
 
 # tools
 tokio = { version = "1.52.1", features = ["full"] }
