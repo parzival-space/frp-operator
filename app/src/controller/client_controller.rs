@@ -23,7 +23,7 @@ pub async fn reconcile(client: Arc<v1alpha1::Client>, context: Arc<OperatorConte
     debug!("Reconciling client for {:?}", client.name_any());
 
     // step 1: resolve frp client config
-    let client_config = FrpClientConfig::kube_from(client.spec.clone(), context.client.clone()).await?;
+    let client_config = FrpClientConfig::resolve(client.spec.clone(), context.client.clone()).await?;
 
     // step 2: build desired managed secret from client + rendered config
     let managed_secret = ManagedClientConfigSecret::from((client.as_ref(), client_config));

@@ -13,7 +13,7 @@ pub struct FrpClientAuthConfig {
 
 // todo: add from mapping similar to the one for client config
 impl FrpConfigResolvable<v1alpha1::ClientAuthSpec> for FrpClientAuthConfig {
-    async fn kube_from(value: v1alpha1::ClientAuthSpec, client: Client) -> Result<Self, Error> {
+    async fn resolve(value: v1alpha1::ClientAuthSpec, client: Client) -> Result<Self, Error> {
         let secrets = Api::<Secret>::default_namespaced(client.clone());
         let secret = secrets.get(&value.token_secret_ref.name).await?;
         let token_data = secret.data.unwrap();
@@ -23,7 +23,7 @@ impl FrpConfigResolvable<v1alpha1::ClientAuthSpec> for FrpClientAuthConfig {
 
         Ok(
             Self {
-                method: FrpClientAuthMethod::kube_from(value.method, client).await?,
+                method: FrpClientAuthMethod::resolve(value.method, client).await?,
                 token: (*token_value.clone()).parse().unwrap()
             }
         )

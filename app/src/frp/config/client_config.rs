@@ -16,12 +16,12 @@ pub struct FrpClientConfig {
 }
 
 impl FrpConfigResolvable<v1alpha1::ClientSpec> for FrpClientConfig {
-    async fn kube_from(value: v1alpha1::ClientSpec, client: Client) -> Result<FrpClientConfig, Error> {
+    async fn resolve(value: v1alpha1::ClientSpec, client: Client) -> Result<FrpClientConfig, Error> {
         Ok(
             Self {
                 server_address: value.server_addr,
                 server_port: value.server_port,
-                auth: FrpClientAuthConfig::kube_from(value.auth, client).await?, // todo: proper mapping is required for auth
+                auth: FrpClientAuthConfig::resolve(value.auth, client).await?, // todo: proper mapping is required for auth
             }
         )
     }
