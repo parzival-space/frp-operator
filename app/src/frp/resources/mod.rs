@@ -1,3 +1,3 @@
-mod client_config_secret_builder;
+mod managed_client_config_secret;
 
-pub use client_config_secret_builder::*;
+pub use managed_client_config_secret::*;

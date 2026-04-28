@@ -43,6 +43,7 @@ impl From<Secret> for ManagedClientConfigSecret {
     }
 }
 
+// implementation for v1alpha1
 impl From<(&v1alpha1::Client, FrpClientConfig)> for ManagedClientConfigSecret {
     fn from(value: (&v1alpha1::Client, FrpClientConfig)) -> Self {
         let (client, client_config) = value;
