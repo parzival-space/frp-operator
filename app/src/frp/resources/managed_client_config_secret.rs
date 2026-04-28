@@ -7,9 +7,7 @@ use kube::ResourceExt;
 use log::warn;
 
 use crate::frp::config::FrpClientConfig;
-
-pub const FRPC_CONFIG_KEY: &str = "frpc.toml";
-pub const CONFIG_HASH_ANNOTATION: &str = "frp.parzival.space/config-hash";
+use crate::frp::resources::{ANNOTATION_CONFIG_HASH, KEY_FRPC_CONFIG};
 
 #[derive(Debug, Clone)]
 pub struct ManagedClientConfigSecret {
@@ -26,7 +24,7 @@ impl ManagedClientConfigSecret {
             .metadata
             .annotations
             .as_ref()?
-            .get(CONFIG_HASH_ANNOTATION)
+            .get(ANNOTATION_CONFIG_HASH)
             .map(String::as_str)
     }
 }
@@ -69,7 +67,7 @@ impl From<(&v1alpha1::Client, FrpClientConfig)> for ManagedClientConfigSecret {
         match toml::to_string(&client_config) {
             Ok(rendered_config) => {
                 secret.string_data = Some(BTreeMap::from([(
-                    FRPC_CONFIG_KEY.to_string(),
+                    KEY_FRPC_CONFIG.to_string(),
                     rendered_config.clone(),
                 )]));
 
@@ -78,7 +76,7 @@ impl From<(&v1alpha1::Client, FrpClientConfig)> for ManagedClientConfigSecret {
                     .metadata
                     .annotations
                     .get_or_insert_default()
-                    .insert(CONFIG_HASH_ANNOTATION.to_string(), config_hash);
+                    .insert(ANNOTATION_CONFIG_HASH.to_string(), config_hash);
             }
             Err(err) => {
                 warn!(
