@@ -28,3 +28,4 @@ toml = { version = "1.1.2+spec-1.1.0", features = ["serde"] }
 # tools
 tokio = { version = "1.52.1", features = ["full"] }
 thiserror = { version = "2.0.18" }
+blake3 = { version = "1.8.5" }
