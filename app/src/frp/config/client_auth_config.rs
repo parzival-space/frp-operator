@@ -4,7 +4,7 @@ use serde::Serialize;
 use frp_operator_api::v1alpha1;
 use crate::frp::config::{FrpClientAuthMethod, FrpConfigResolvable};
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct FrpClientAuthConfig {
     pub method: FrpClientAuthMethod,

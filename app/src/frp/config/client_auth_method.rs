@@ -3,7 +3,7 @@ use serde::Serialize;
 use frp_operator_api::v1alpha1;
 use crate::frp::config::FrpConfigResolvable;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum FrpClientAuthMethod {
     Token,
