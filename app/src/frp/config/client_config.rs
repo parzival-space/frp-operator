@@ -1,7 +1,7 @@
 use serde::Serialize;
 use kube::{Client, Error};
 use frp_operator_api::v1alpha1;
-use crate::frp::config::{FrpClientAuthConfig, FrpClientAuthMethod};
+use crate::frp::config::{FrpClientAuthConfig};
 use crate::frp::config::FrpConfigResolvable;
 
 #[derive(Serialize)]

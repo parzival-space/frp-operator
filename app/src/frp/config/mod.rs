@@ -1,6 +1,7 @@
-mod client_auth_config; 
+mod client_auth_config;
 mod client_config;
 
+use thiserror::Error;
 pub use client_auth_config::*;
 pub use client_config::*;
 

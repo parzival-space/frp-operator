@@ -1,9 +1,8 @@
 use k8s_openapi::api::core::v1::Secret;
 use kube::{Api, Client, Error};
-use log::debug;
 use serde::Serialize;
 use frp_operator_api::v1alpha1;
-use crate::frp::config::FrpConfigResolvable;
+use crate::frp::config::{FrpConfigResolvable};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
