@@ -20,45 +20,38 @@ pub enum ClientReconcileError {
 }
 
 pub async fn reconcile(client: Arc<v1alpha1::Client>, context: Arc<OperatorContext>) -> Result<Action, ClientReconcileError> {
-    debug!("Reconciling client for {:?}", client.name_any());
-
-    // step 1: resolve frp client config
     let client_config = FrpClientConfig::resolve(client.spec.clone(), context.client.clone()).await?;
 
-    // step 2: build desired managed secret from client + rendered config
+    // build desired managed secret from client + rendered config
     let managed_secret = ManagedClientConfigSecret::from((client.as_ref(), client_config));
-    let secret_name = managed_secret.name().unwrap_or_default().to_string();
-    let desired_hash = managed_secret.config_hash().map(str::to_string);
 
-    // step 3: compare existing hash and apply only on drift
-    let namespace = client
-        .namespace()
-        .ok_or_else(|| ClientReconcileError::MissingNamespace(client.name_any()))?;
-    let secrets: Api<Secret> = Api::namespaced(context.client.clone(), &namespace);
-    let existing_hash = secrets
-        .get_opt(&secret_name)
-        .await?
-        .map(ManagedClientConfigSecret::from)
-        .and_then(|secret| secret.config_hash().map(str::to_string));
 
-    if existing_hash == desired_hash {
-        info!(
-            "Config secret {} is up to date for {}",
-            secret_name,
-            client.name_any()
-        );
-        return Ok(Action::await_change());
+    // compare existing hash and apply only on drift
+    let secrets: Api<Secret> = Api::namespaced(context.client.clone(), &client.namespace().unwrap_or_default());
+    if let Some(existing_secret) = secrets
+        .get_opt(&managed_secret.name().unwrap_or_default()).await?
+        .map(ManagedClientConfigSecret::from) {
+        // compare existing hash
+        if managed_secret.config_hash().eq(&existing_secret.config_hash()) {
+            debug!("Config secret for client {} is up to date, skipping apply", client.name_any());
+            return Ok(Action::await_change());
+        }
+
+        secrets
+            .patch(
+                &managed_secret.name().unwrap_or_default(),
+                &PatchParams::apply("frp-operator").force(),
+                &Patch::<&Secret>::Apply(&managed_secret.clone().into()),
+            )
+            .await?;
+        info!("Updated config secret {} for {}", managed_secret.name().unwrap_or_default(), client.name_any());
+    } else {
+        // just push new secret
+        secrets
+            .create(&Default::default(), &managed_secret.clone().into())
+            .await?;
+        info!("Created config secret {} for {}", managed_secret.name().unwrap_or_default(), client.name_any());
     }
-
-    let secret: Secret = managed_secret.into();
-    secrets
-        .patch(
-            &secret_name,
-            &PatchParams::apply("frp-operator").force(),
-            &Patch::Apply(&secret),
-        )
-        .await?;
-    info!("Applied config secret {} for {}", secret_name, client.name_any());
 
     Ok(Action::await_change())
 }
