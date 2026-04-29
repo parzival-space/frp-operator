@@ -1,7 +1,7 @@
-use std::collections::BTreeMap;
 use kube::CustomResource;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 #[derive(CustomResource, Debug, Serialize, Deserialize, Clone, JsonSchema)]
 #[kube(group = "frp.parzival.space", kind = "Client", version = "v1alpha1")]

@@ -1,10 +1,12 @@
-use std::collections::BTreeMap;
-use k8s_openapi::api::apps::v1::{Deployment, DeploymentSpec};
-use k8s_openapi::api::core::v1::{Container, PodSpec, PodTemplateSpec, SecretVolumeSource, Volume, VolumeMount};
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta};
+use crate::resources::{ANNOTATION_CONFIG_HASH, KEY_FRPC_CONFIG, ManagedClientConfigSecret};
 use frp_operator_api::v1alpha1;
+use k8s_openapi::api::apps::v1::{Deployment, DeploymentSpec};
+use k8s_openapi::api::core::v1::{
+    Container, PodSpec, PodTemplateSpec, SecretVolumeSource, Volume, VolumeMount,
+};
+use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta};
 use kube::ResourceExt;
-use crate::frp::resources::{ManagedClientConfigSecret, ANNOTATION_CONFIG_HASH, KEY_FRPC_CONFIG};
+use std::collections::BTreeMap;
 
 #[derive(Debug, Clone)]
 pub struct ManagedClientDeployment {
@@ -38,7 +40,6 @@ impl From<Deployment> for ManagedClientDeployment {
     }
 }
 
-// implementation for v1alpha1
 impl From<(&v1alpha1::Client, ManagedClientConfigSecret)> for ManagedClientDeployment {
     fn from(value: (&v1alpha1::Client, ManagedClientConfigSecret)) -> Self {
         let (client, config) = value;
@@ -105,7 +106,7 @@ impl From<(&v1alpha1::Client, ManagedClientConfigSecret)> for ManagedClientDeplo
                     ..Default::default()
                 }),
                 ..Default::default()
-            }
+            },
         }
     }
 }

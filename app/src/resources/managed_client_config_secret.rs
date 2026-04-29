@@ -6,8 +6,8 @@ use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use kube::ResourceExt;
 use log::warn;
 
-use crate::frp::config::FrpClientConfig;
-use crate::frp::resources::{ANNOTATION_CONFIG_HASH, KEY_FRPC_CONFIG};
+use crate::frp::FrpClientConfig;
+use crate::resources::{ANNOTATION_CONFIG_HASH, KEY_FRPC_CONFIG};
 
 #[derive(Debug, Clone)]
 pub struct ManagedClientConfigSecret {
@@ -41,7 +41,6 @@ impl From<Secret> for ManagedClientConfigSecret {
     }
 }
 
-// implementation for v1alpha1
 impl From<(&v1alpha1::Client, FrpClientConfig)> for ManagedClientConfigSecret {
     fn from(value: (&v1alpha1::Client, FrpClientConfig)) -> Self {
         let (client, client_config) = value;
