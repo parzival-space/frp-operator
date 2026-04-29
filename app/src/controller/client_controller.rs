@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use k8s_openapi::api::apps::v1::Deployment;
 use k8s_openapi::api::core::v1::Secret;
 use kube::{Api, ResourceExt};
 use kube::api::{Patch, PatchParams};
@@ -7,7 +8,7 @@ use log::{debug, info, warn};
 use thiserror::Error;
 use frp_operator_api::v1alpha1;
 use crate::frp::config::{FrpClientConfig, FrpConfigResolvable};
-use crate::frp::resources::ManagedClientConfigSecret;
+use crate::frp::resources::{ManagedClientConfigSecret, ManagedClientDeployment};
 use crate::OperatorContext;
 
 #[derive(Debug, Error)]
@@ -22,11 +23,8 @@ pub enum ClientReconcileError {
 pub async fn reconcile(client: Arc<v1alpha1::Client>, context: Arc<OperatorContext>) -> Result<Action, ClientReconcileError> {
     let client_config = FrpClientConfig::resolve(client.spec.clone(), context.client.clone()).await?;
 
-    // build desired managed secret from client + rendered config
+    // ensure client configuration is up to date
     let managed_secret = ManagedClientConfigSecret::from((client.as_ref(), client_config));
-
-
-    // compare existing hash and apply only on drift
     let secrets: Api<Secret> = Api::namespaced(context.client.clone(), &client.namespace().unwrap_or_default());
     if let Some(existing_secret) = secrets
         .get_opt(&managed_secret.name().unwrap_or_default()).await?
@@ -51,6 +49,34 @@ pub async fn reconcile(client: Arc<v1alpha1::Client>, context: Arc<OperatorConte
             .create(&Default::default(), &managed_secret.clone().into())
             .await?;
         info!("Created config secret {} for {}", managed_secret.name().unwrap_or_default(), client.name_any());
+    }
+
+    // ensure deployment is up to date
+    let managed_deployment = ManagedClientDeployment::from((client.as_ref(), managed_secret));
+    let deployments: Api<Deployment> = Api::namespaced(context.client.clone(), &client.namespace().unwrap_or_default());
+    if let Some(existing_deployment) = deployments
+        .get_opt(&managed_deployment.name().unwrap_or_default()).await?
+        .map(ManagedClientDeployment::from) {
+        // compare existing hash
+        if managed_deployment.config_hash().eq(&existing_deployment.config_hash()) {
+            debug!("Deployment for client {} is up to date, skipping apply", client.name_any());
+            return Ok(Action::await_change());
+        }
+
+        deployments
+            .patch(
+                &managed_deployment.name().unwrap_or_default(),
+                &PatchParams::apply("frp-operator").force(),
+                &Patch::<&Deployment>::Apply(&managed_deployment.clone().into()),
+            )
+            .await?;
+        info!("Updated deployment {} for {}", managed_deployment.name().unwrap_or_default(), client.name_any());
+    } else {
+        // just push new deployment
+        deployments
+            .create(&Default::default(), &managed_deployment.clone().into())
+            .await?;
+        info!("Created deployment {} for {}", managed_deployment.name().unwrap_or_default(), client.name_any());
     }
 
     Ok(Action::await_change())
