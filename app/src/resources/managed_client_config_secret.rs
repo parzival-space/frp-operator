@@ -2,7 +2,6 @@ use std::collections::BTreeMap;
 
 use frp_operator_api::v1alpha1;
 use k8s_openapi::api::core::v1::Secret;
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use kube::ResourceExt;
 use log::warn;
 
@@ -15,6 +14,53 @@ pub struct ManagedClientConfigSecret {
 }
 
 impl ManagedClientConfigSecret {
+    fn new() -> Self {
+        Self {
+            secret: Secret {
+                metadata: kube::api::ObjectMeta {
+                    labels: Some(BTreeMap::from([
+                        ("app.kubernetes.io/name".to_string(), "frpc".to_string()),
+                        (
+                            "app.kubernetes.io/managed-by".to_string(),
+                            "frp-operator".to_string(),
+                        ),
+                        ("frp.parzival.space/client".to_string(), String::new()),
+                    ])),
+                    ..Default::default()
+                },
+                type_: Some("Opaque".to_string()),
+                ..Secret::default()
+            },
+        }
+    }
+
+    fn set_namespace(&mut self, namespace: Option<String>) {
+        self.secret.metadata.namespace = namespace;
+    }
+
+    fn set_client_name(&mut self, client_name: String) {
+        self.secret.metadata.name = Some(format!("{}-frpc-config", client_name.clone()));
+        self.secret
+            .metadata
+            .labels
+            .get_or_insert_default()
+            .insert("frp.parzival.space/client".to_string(), client_name);
+    }
+
+    fn set_rendered_config(&mut self, rendered_config: String) {
+        self.secret.string_data = Some(BTreeMap::from([(
+            KEY_FRPC_CONFIG.to_string(),
+            rendered_config.clone(),
+        )]));
+
+        let config_hash = blake3::hash(rendered_config.as_bytes()).to_string();
+        self.secret
+            .metadata
+            .annotations
+            .get_or_insert_default()
+            .insert(ANNOTATION_CONFIG_HASH.to_string(), config_hash);
+    }
+
     pub fn name(&self) -> Option<&str> {
         self.secret.metadata.name.as_deref()
     }
@@ -44,39 +90,12 @@ impl From<Secret> for ManagedClientConfigSecret {
 impl From<(&v1alpha1::Client, FrpClientConfig)> for ManagedClientConfigSecret {
     fn from(value: (&v1alpha1::Client, FrpClientConfig)) -> Self {
         let (client, client_config) = value;
-        let client_name = client.name_any();
-        let mut secret = Secret {
-            metadata: ObjectMeta {
-                name: Some(format!("{}-frpc-config", client_name)),
-                namespace: client.namespace(),
-                labels: Some(BTreeMap::from([
-                    ("app.kubernetes.io/name".to_string(), "frpc".to_string()),
-                    (
-                        "app.kubernetes.io/managed-by".to_string(),
-                        "frp-operator".to_string(),
-                    ),
-                    ("frp.parzival.space/client".to_string(), client_name),
-                ])),
-                ..ObjectMeta::default()
-            },
-            type_: Some("Opaque".to_string()),
-            ..Secret::default()
-        };
+        let mut secret = Self::new();
+        secret.set_namespace(client.namespace());
+        secret.set_client_name(client.name_any());
 
         match toml::to_string(&client_config) {
-            Ok(rendered_config) => {
-                secret.string_data = Some(BTreeMap::from([(
-                    KEY_FRPC_CONFIG.to_string(),
-                    rendered_config.clone(),
-                )]));
-
-                let config_hash = blake3::hash(rendered_config.as_bytes()).to_string();
-                secret
-                    .metadata
-                    .annotations
-                    .get_or_insert_default()
-                    .insert(ANNOTATION_CONFIG_HASH.to_string(), config_hash);
-            }
+            Ok(rendered_config) => secret.set_rendered_config(rendered_config),
             Err(err) => {
                 warn!(
                     "Failed to serialize client config to TOML for {}: {}",
@@ -86,6 +105,6 @@ impl From<(&v1alpha1::Client, FrpClientConfig)> for ManagedClientConfigSecret {
             }
         }
 
-        Self { secret }
+        secret
     }
 }
