@@ -2,6 +2,7 @@
   - [ ] Client
     - [ ] clientID (inferred from resource name)
     - [ ] user?
+    - [ ] Docker Image (default: `snowdreamtech/frpc`)
     - [x] serverAddress
     - [x] serverPort
     - [ ] auth.method
@@ -30,6 +31,11 @@
     - [ ] (remaining fields)
   - [ ] Visitor
       - [ ] (remaining fields)
+  - [ ] Server (low priority, might be implemented in the future)
+    - [ ] Create Server CRD
+    - [ ] Custom Image (default: `snowdreamtech/frps`)
+    - [ ] Automatically create ingress rules
+    - [ ] more?
 - [ ] Create HELM chart
 - [ ] Operator
   - [ ] Reconcile Client
