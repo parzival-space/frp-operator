@@ -20,6 +20,7 @@ tokio.workspace = true
 simplelog.workspace = true
 thiserror.workspace = true
 blake3.workspace = true
+itertools.workspace = true
 
 # todo: remove this
 futures-util = "0.3.28"

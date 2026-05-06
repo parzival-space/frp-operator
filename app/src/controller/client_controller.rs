@@ -24,8 +24,7 @@ pub async fn reconcile(
     client: Arc<v1alpha1::Client>,
     context: Arc<OperatorContext>,
 ) -> Result<Action, ClientReconcileError> {
-    let client_config =
-        FrpClientConfig::resolve(client.spec.clone(), context.client.clone()).await?;
+    let client_config = FrpClientConfig::resolve(client.as_ref().clone(), context.client.clone()).await?;
 
     // ensure client configuration is up to date
     let managed_secret = ManagedClientConfigSecret::from((client.as_ref(), client_config));
