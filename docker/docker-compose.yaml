@@ -8,4 +8,5 @@ services:
       - ./frps.toml:/etc/frp/frps.toml:ro
     ports:
       - "7000:7000"
+      - "7500:7500"
       - "8080:8080"
