@@ -1,23 +1,41 @@
-- Create CRDs
-    - Client
-        - clientID?
-        - user?
-        - serverAddr
-        - serverPort
-        - auth.method (always token for now)
-        - auth.token
-        - webServer.* (skip admin ui for now)
-        - transport.* (always use tcp for now)
-        - metadatas.*
-    - Upstream (for lack of better name)
-        - name (can probably be infered)
-        - type
-        - localIP
-        - localPort
-        - transport.* (skip for now)
-        - remotePort
-        - loadBalancer.* (skip for now)
-        - healthCheck.* (skip for now)
-        - metadatas.*
-    - Visitor (Proxy Client -> Proxy Server -> Proxy Client)
-        - * (skip for now)
+- [ ] Create CRDs
+  - [ ] Client
+    - [ ] clientID (inferred from resource name)
+    - [ ] user?
+    - [x] serverAddress
+    - [x] serverPort
+    - [ ] auth.method
+      - [x] token
+      - [ ] OIDC
+    - [x] auth.token
+    - [ ] webServer.*
+    - [ ] transport.*
+    - [ ] metadatas.*
+    - [ ] (remaining fields)
+  - [ ] Tunnel (Proxies)
+    - [x] name (inferred from resource name)
+    - [ ] type
+      - [x] tcp
+      - [x] udp
+      - [ ] http
+      - [ ] https
+      - [ ] (remaining fields)
+    - [x] localIP
+    - [x] localPort
+    - [ ] transport.*
+    - [ ] loadBalancer.*
+    - [ ] healthCheck.*
+    - [ ] metadatas.*
+    - [ ] annotations.*
+    - [ ] (remaining fields)
+  - [ ] Visitor
+      - [ ] (remaining fields)
+- [ ] Create HELM chart
+- [ ] Operator
+  - [ ] Reconcile Client
+    - [x] on Client CRD change
+    - [x] on Tunnel CRD change
+    - [ ] on Visitor CRD change
+  - [x] Build FRP client configuration file
+  - [x] Deploy FRP client as a Deployment
+  - [x] Compare Configs using Blake3 checksum 
