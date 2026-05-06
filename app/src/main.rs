@@ -10,6 +10,7 @@ use kube::{Api, Client};
 use log::LevelFilter;
 use simplelog::{TermLogger, TerminalMode};
 use std::sync::Arc;
+use kube::runtime::reflector::ObjectRef;
 
 #[derive(Clone)]
 pub struct OperatorContext {
@@ -31,12 +32,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         client: kube.clone(),
     }); // bad empty context - put client in here
 
-    let client_api: Api<v1alpha1::Client> = Api::all(kube);
-    // todo: add tunnel api
+    let client_api: Api<v1alpha1::Client> = Api::all(kube.clone());
+    let tunnel_api: Api<v1alpha1::Tunnel> = Api::all(kube.clone());
     // todo: add visitor api
-
+    
     tokio::join!(
+        // v1alpha1::Client, v1alpha1::Tunnel
         Controller::new(client_api, Config::default().any_semantic())
+            .watches(
+                tunnel_api,
+                Config::default().any_semantic(),
+                |tunnel: v1alpha1::Tunnel| {
+                    // map tunnel changes to client to trigger client reconcile
+                    vec![
+                        ObjectRef::new(&tunnel.spec.client_ref.name)
+                            .within(&tunnel.spec.client_ref.namespace)
+                    ]
+                }
+            )
             .shutdown_on_signal()
             .run(
                 controller::client_controller::reconcile,
