@@ -44,4 +44,6 @@
     - [ ] on Visitor CRD change
   - [x] Build FRP client configuration file
   - [x] Deploy FRP client as a Deployment
+    - [ ] Configure Health Checks
+    - [ ] Configure Resource Requests and Limits
   - [x] Compare Configs using Blake3 checksum 
