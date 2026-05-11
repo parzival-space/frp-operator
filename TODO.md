@@ -1,4 +1,4 @@
-- [ ] Create CRDs
+- [x] Create CRDs
   - [ ] Client
     - [ ] clientID (inferred from resource name)
     - [ ] user?
@@ -36,9 +36,9 @@
     - [ ] Custom Image (default: `snowdreamtech/frps`)
     - [ ] Automatically create ingress rules
     - [ ] more?
-- [ ] Create HELM chart
-- [ ] Operator
-  - [ ] Reconcile Client
+- [x] Create HELM chart
+- [x] Operator
+  - [x] Reconcile Client
     - [x] on Client CRD change
     - [x] on Tunnel CRD change
     - [ ] on Visitor CRD change
@@ -47,3 +47,4 @@
     - [ ] Configure Health Checks
     - [ ] Configure Resource Requests and Limits
   - [x] Compare Configs using Blake3 checksum 
+  - [ ] Delete old deployments when config gets removed
