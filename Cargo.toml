@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["api", "app"]
+members = ["frp-operator-api", "frp-operator"]
 
 [workspace.package]
 version = "0.1.0"
@@ -23,7 +23,7 @@ schemars = { version = "1.2.1" }
 serde = { version = "1.0.228" }
 serde_json = { version = "1.0.149"}
 serde_yaml = { version = "0.9.33" }
-toml = { version = "1.1.2+spec-1.1.0", features = ["serde"] }
+toml = { version = "1.1.2", features = ["serde"] }
 
 # tools
 tokio = { version = "1.52.1", features = ["full"] }

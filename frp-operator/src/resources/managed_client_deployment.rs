@@ -7,7 +7,6 @@ use k8s_openapi::api::core::v1::{
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta};
 use kube::ResourceExt;
 use std::collections::BTreeMap;
-use kube::runtime::predicates::labels;
 
 #[derive(Debug, Clone)]
 pub struct ManagedClientDeployment {

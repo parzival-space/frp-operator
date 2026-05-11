@@ -2,12 +2,12 @@
 <module type="EMPTY_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/api/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/app/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-old" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/api/target" />
+      <sourceFolder url="file://$MODULE_DIR$/frp-operator-api/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/frp-operator/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/frp-operator-api/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

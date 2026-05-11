@@ -40,7 +40,7 @@ impl FrpConfigResolvable<v1alpha1::Tunnel> for FrpClientProxy {
 }
 
 impl FrpConfigResolvable<v1alpha1::TunnelType> for FrpClientProxyType {
-    async fn resolve(value: TunnelType, client: Client) -> Result<Self, Error>
+    async fn resolve(value: TunnelType, _client: Client) -> Result<Self, Error>
     where
         Self: Sized
     {

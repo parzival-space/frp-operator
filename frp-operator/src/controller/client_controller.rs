@@ -15,9 +15,6 @@ use thiserror::Error;
 pub enum ClientReconcileError {
     #[error(transparent)]
     Kube(#[from] kube::Error),
-
-    #[error("client {0} is missing namespace")]
-    MissingNamespace(String),
 }
 
 pub async fn reconcile(

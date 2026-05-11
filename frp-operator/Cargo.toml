@@ -7,7 +7,7 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-frp-operator-api = { path = "../api" }
+frp-operator-api = { path = "../frp-operator-api" }
 log.workspace = true
 kube.workspace = true
 k8s-openapi.workspace = true
