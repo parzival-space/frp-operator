@@ -24,3 +24,6 @@
 
 # instructions for CRD generation
 crds/README.md
+
+# distribution files
+dist/
