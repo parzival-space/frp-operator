@@ -1,0 +1,8 @@
+apiVersion: v2
+
+name: frp-operator
+description: Kubernetes operator for frp, a fast reverse proxy to help you expose a local server behind a NAT or firewall to the internet.
+
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
