@@ -1,0 +1,171 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-pre*'
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      license: ${{ steps.license.outputs.license }}
+      description: ${{ steps.description.outputs.description }}
+      prerelease: ${{ steps.prerelease.outputs.prerelease }}
+    steps:
+      - id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - id: license
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: license } = await github.rest.licenses.getForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            return license.spdx_id;
+      - id: description
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            return repo.description;
+      - id: prerelease
+        shell: bash
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            *-pre*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+  validate:
+    needs: metadata
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6.0.2
+      - name: Validate Versions
+        run: |
+          release_version="${{ needs.metadata.outputs.version }}"
+          
+          # ensure that the cargo workspace version matches the tag version
+          workspace_version="$(awk '
+            $0 == "[workspace.package]" { in_section = 1; next }
+            /^\[/ && in_section { exit }
+            in_section && $1 == "version" { gsub(/"/, "", $3); print $3; exit }
+          ' Cargo.toml)"
+          if [[ "${workspace_version}" != "${release_version}" ]]; then
+            echo "::error::Workspace version (${workspace_version}) does not match release tag version (${release_version})"
+            exit 1
+          fi
+          
+          # ensure that the chart version matches the tag version
+          chart_version="$(awk '$1 == "version:" { gsub(/"/, "", $2); print $2; exit }' chart/Chart.yaml)"
+          if [[ "${chart_version}" != "${release_version}" ]]; then
+            echo "::error::Chart version (${chart_version}) does not match release tag version (${release_version})"
+            exit 1
+          fi
+          
+          # ensure that the app version matches the tag version
+          app_version="$(awk '$1 == "appVersion:" { gsub(/"/, "", $2); print $2; exit }' chart/Chart.yaml)"
+          if [[ "${app_version}" != "${release_version}" ]]; then
+            echo "::error::App version (${app_version}) does not match release tag version (${release_version})"
+            exit 1
+          fi
+      - name: Run Rust tests
+        run: cargo test --quiet
+      - name: Validate Helm chart
+        run: |
+          cargo run --bin crdgen -p frp-operator-api -- ./chart/crds/generated.yaml
+          helm lint chart
+          helm template frp-operator chart --include-crds >/dev/null
+
+  publish-image:
+    needs: [metadata, validate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6.0.2
+      - name: Docker Setup QEMU
+        uses: docker/setup-qemu-action@v4.0.0
+      - name: Docker Setup Buildx
+        uses: docker/setup-buildx-action@v4.0.0
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve image tags
+        id: image-tags
+        shell: bash
+        run: |
+          {
+            echo "tags<<EOF"
+            echo "ghcr.io/${{ needs.metadata.outputs.owner_lc }}/frp-operator:${{ needs.metadata.outputs.version }}"
+            if [[ "${{ needs.metadata.outputs.prerelease }}" == "false" ]]; then
+              echo "ghcr.io/${{ needs.metadata.outputs.owner_lc }}/frp-operator:latest"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v7.1.0
+        with:
+          context: .
+          push: true
+          platforms: |
+            linux/amd64
+            linux/arm64
+            linux/arm/v7
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=${{ needs.metadata.outputs.description }}
+            org.opencontainers.image.licenses=${{ needs.metadata.outputs.license }}
+          tags: ${{ steps.image-tags.outputs.tags }}
+
+  publish-chart:
+    needs: [metadata, validate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6.0.2
+      - name: Setup Helm
+        uses: azure/setup-helm@v5.0.0
+      - name: Login to GitHub Container Registry
+        shell: bash
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io \
+            --username "${{ github.actor }}" \
+            --password-stdin
+      - name: Generate CRD YAML
+        run: cargo run --bin crdgen -p frp-operator-api -- ./chart/crds/generated.yaml
+      - name: Build and push Helm Chart
+        run: |
+          helm package chart --destination dist
+          helm push dist/frp-operator-${{ needs.metadata.outputs.version }}.tgz oci://ghcr.io/${{ github.actor }}/frp-operator-chart
+
+  github-release:
+    needs: [metadata, publish-image, publish-chart]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: GH Release
+        uses: softprops/action-gh-release@v3.0.0
+        with:
+          files: |
+            LICENSE
+          generate_release_notes: true
+          prerelease: ${{ needs.metadata.outputs.prerelease }}
