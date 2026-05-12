@@ -9,13 +9,13 @@ jobs:
   metadata:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      license: ${{ steps.license.outputs.license }}
-      description: ${{ steps.description.outputs.description }}
-      prerelease: ${{ steps.prerelease.outputs.prerelease }}
+      version: ${{ steps.version.outputs.result }}
+      license: ${{ steps.license.outputs.result }}
+      description: ${{ steps.description.outputs.result }}
+      prerelease: ${{ steps.prerelease.outputs.result }}
     steps:
       - id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        run: echo "result=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
       - id: license
         uses: actions/github-script@v6
         with:
@@ -38,8 +38,8 @@ jobs:
         shell: bash
         run: |
           case "${GITHUB_REF_NAME}" in
-            *-pre*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;;
-            *) echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
+            *-pre*) echo "result=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "result=false" >> "$GITHUB_OUTPUT" ;;
           esac
 
   validate:
@@ -109,9 +109,9 @@ jobs:
         run: |
           {
             echo "tags<<EOF"
-            echo "ghcr.io/${{ needs.metadata.outputs.owner_lc }}/frp-operator:${{ needs.metadata.outputs.version }}"
+            echo "ghcr.io/${{ github.repository_owner }}/frp-operator:${{ needs.metadata.outputs.version }}"
             if [[ "${{ needs.metadata.outputs.prerelease }}" == "false" ]]; then
-              echo "ghcr.io/${{ needs.metadata.outputs.owner_lc }}/frp-operator:latest"
+              echo "ghcr.io/${{ github.repository_owner }}/frp-operator:latest"
             fi
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
@@ -152,7 +152,7 @@ jobs:
       - name: Build and push Helm Chart
         run: |
           helm package chart --destination dist
-          helm push dist/frp-operator-${{ needs.metadata.outputs.version }}.tgz oci://ghcr.io/${{ github.actor }}/frp-operator-chart
+          helm push dist/frp-operator-${{ needs.metadata.outputs.version }}.tgz oci://ghcr.io/${{ github.repository_owner }}/frp-operator-chart
 
   github-release:
     needs: [metadata, publish-image, publish-chart]
