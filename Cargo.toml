@@ -3,7 +3,7 @@ resolver = "3"
 members = ["frp-operator-api", "frp-operator"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.0-pre1"
 edition = "2024"
 license = "MIT"
 authors = ["Malte Linke <me@parizval.space>"]

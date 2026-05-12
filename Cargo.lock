@@ -411,7 +411,7 @@ dependencies = [
 
 [[package]]
 name = "frp-operator"
-version = "0.1.0"
+version = "0.1.0-pre1"
 dependencies = [
  "blake3",
  "frp-operator-api",
@@ -432,7 +432,7 @@ dependencies = [
 
 [[package]]
 name = "frp-operator-api"
-version = "0.1.0"
+version = "0.1.0-pre1"
 dependencies = [
  "k8s-openapi",
  "kube",
