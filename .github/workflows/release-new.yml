@@ -1,3 +1,5 @@
+name: Release New Version
+
 on:
   push:
     tags:
@@ -9,7 +11,7 @@ env:
   CI_IMAGE_NAME: frp-operator
   CI_IMAGE_PLATFORMS: |
     linux/amd64
-#    linux/arm64
+    linux/arm64
 
 jobs:
   validate:
